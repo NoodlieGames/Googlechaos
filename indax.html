@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign in - Google</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  font-family: 'Roboto', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: rgb(250,250,250);
+  overflow: hidden;
+  transition: background 0.5s;
+}
+.login-container {
+  background: white;
+  padding: 50px;
+  border-radius: 8px;
+  box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+  width: 360px;
+  text-align: center;
+  position: relative;
+  transition: all 0.1s;
+}
+.login-container h1 { font-weight: 400; margin-bottom: 30px; font-size: 24px; transition: all 0.1s; }
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #dadce0;
+  transition: all 0.1s;
+}
+button {
+  background: #1a73e8;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+}
+.extra { margin-top: 10px; font-size: 12px; color: #555; transition: all 0.1s; }
+.captcha-box { display:flex; align-items:center; justify-content:space-between; background:#f1f3f4; padding:10px 15px; border-radius:8px; user-select:none; font-family:Arial,sans-serif; transition: all 0.1s; margin-top:10px; }
+#captcha-visual { display:flex; gap:5px; font-weight:bold; font-size:18px; }
+#captcha-visual span { transition: all 0.1s; }
+.captcha-input { margin-top:10px; padding:8px; width:100%; border-radius:4px; border:1px solid #dadce0; transition: all 0.1s; }
+#fake-cursor { width: 10px; height: 10px; border-radius: 50%; background: red; position: absolute; top: 0; left: 0; z-index: 9999; pointer-events: none; transition: all 0.05s; }
+</style>
+</head>
+<body>
+<div class="login-container">
+  <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google Logo" id="logo">
+  <h1>Sign in</h1>
+  <input type="email" placeholder="Email or phone">
+  <input type="password" placeholder="Password">
+
+  <div class="captcha-box">
+    <div id="captcha-visual">
+      <span style="transform:rotate(-5deg)">7</span>
+      <span style="transform:rotate(3deg)">X</span>
+      <span style="transform:rotate(-2deg)">2</span>
+      <span style="transform:rotate(4deg)">Q</span>
+    </div>
+    <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png" alt="Google Logo" style="height:30px; margin-left:10px;">
+  </div>
+  <input type="text" class="captcha-input" placeholder="Type CAPTCHA">
+
+  <button id="next-btn">Next</button>
+  <p class="extra">Forgot email? | Create account</p>
+</div>
+
+<div id="fake-cursor"></div>
+
+<script>
+const container = document.querySelector('.login-container');
+const captchaVisual = document.getElementById('captcha-visual');
+const inputs = document.querySelectorAll('input');
+const fakeCursor = document.getElementById('fake-cursor');
+let chaosLevel = 0;
+
+setInterval(()=>{
+  const shade = 245 + Math.random()*10;
+  document.body.style.background = `rgb(${shade},${shade},${shade})`;
+},1000);
+
+inputs.forEach(input=>{
+  input.addEventListener('keydown', e=>{
+    e.preventDefault();
+    let char = Math.random() < chaosLevel*0.5 ? String.fromCharCode(65 + Math.floor(Math.random()*26)) : (e.key.length===1 ? e.key:'');
+    input.value += char;
+  });
+});
+
+document.getElementById('next-btn').addEventListener('mouseover',()=>{
+  if(chaosLevel>0.2){
+    const x = Math.random()*50-25;
+    const y = Math.random()*20-10;
+    document.getElementById('next-btn').style.transform = `translate(${x}px,${y}px) rotate(${Math.random()*15-7.5}deg)`;
+  }
+});
+
+setInterval(()=>{
+  if(Math.random() < chaosLevel){
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    captchaVisual.querySelectorAll('span').forEach(span=>{
+      span.textContent = chars.charAt(Math.floor(Math.random()*chars.length));
+      span.style.transform = `rotate(${Math.random()*10-5}deg)`;
+    });
+  }
+},500);
+
+let escalation = setInterval(()=>{
+  chaosLevel += 0.05;
+  if(chaosLevel>1){
+    chaosLevel = 1;
+    clearInterval(escalation);
+    startBreakingPoint();
+  }
+},1000);
+
+setTimeout(()=>{
+  chaosLevel = 1;
+  startBreakingPoint();
+},5000);
+
+function chaosStep(){
+  const x=(Math.random()-0.5)*50;
+  const y=(Math.random()-0.5)*50;
+  const angle=(Math.random()-0.5)*20;
+  container.style.transform=`translate(${x}px,${y}px) rotate(${angle}deg)`;
+  document.body.style.background=`rgb(${Math.random()*255},${Math.random()*255},${Math.random()*255})`;
+  inputs.forEach(input=>{
+    if(Math.random()<0.7 && input.value.length>0) input.value=input.value.slice(0,-1);
+    else input.value+=String.fromCharCode(65+Math.floor(Math.random()*26));
+  });
+  captchaVisual.querySelectorAll('span').forEach(span=>{
+    span.style.transform=`rotate(${Math.random()*30-15}deg)`;
+  });
+  fakeCursor.style.top=Math.random()*window.innerHeight+'px';
+  fakeCursor.style.left=Math.random()*window.innerWidth+'px';
+}
+
+function startBreakingPoint(){
+  const audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  setInterval(()=>{
+    chaosStep();
+    const osc = audioCtx.createOscillator();
+    osc.type='sine';
+    osc.frequency.setValueAtTime(100 + Math.random()*2000, audioCtx.currentTime);
+    osc.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.1);
+  },100);
+}
+
+document.getElementById('next-btn').addEventListener('click',()=>{
+  const AudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  const notes=[329.63,329.63,349.23,392.00,392.00,349.23,329.63,261.63];
+  let time=AudioCtx.currentTime;
+  notes.forEach(freq=>{
+    const osc=AudioCtx.createOscillator();
+    osc.type='sine';
+    osc.frequency.setValueAtTime(freq,time);
+    osc.connect(AudioCtx.destination);
+    osc.start(time);
+    osc.stop(time+0.3);
+    time+=0.35;
+  });
+  alert("Never gonna give you up 😏");
+});
+</script>
+</body>
+</html>
